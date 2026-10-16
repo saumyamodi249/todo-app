@@ -1,10 +1,14 @@
 import React from "react";
 import Header from "../components/header/Header";
 
-const MergedHeader: React.FC = () => {
+interface MergedHeaderProps {
+  totalCount: number;
+}
+
+const MergedHeader: React.FC<MergedHeaderProps> = ({ totalCount }) => {
   return (
     <div className="w-full">
-      <Header />
+      <Header taskCount={totalCount} />
     </div>
   );
 };

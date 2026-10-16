@@ -1,16 +1,18 @@
-import React, { useState } from 'react';
+import React from "react";
 
 interface TaskTitleCountProps {
-  initialCount?: number;
+  count: number;
 }
 
-const TaskTitleCount: React.FC<TaskTitleCountProps> = ({ initialCount = 0 }) => {
-  const [count, setCount] = useState<number>(initialCount);
-
+const TaskTitleCount: React.FC<TaskTitleCountProps> = ({ count }) => {
   return (
     <div className="flex items-end gap-1.5">
-      <div className="text-2xl font-semibold tracking-wide text-black">TASKS</div>
-      <div className="text-xs font-mono text-zinc-400">[{count}]</div>
+      <div className="text-2xl font-semibold tracking-wide text-black">
+        TASKS
+      </div>
+      <div className="text-xs font-mono text-zinc-400">
+        [{count}]
+      </div>
     </div>
   );
 };

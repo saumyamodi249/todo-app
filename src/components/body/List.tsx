@@ -2,15 +2,23 @@ import React from "react";
 import { Checkbox } from "antd";
 import { RxCross2 } from "react-icons/rx";
 import type { DragEndEvent } from "@dnd-kit/core";
-import { DndContext } from "@dnd-kit/core";
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import {
   arrayMove,
   SortableContext,
+  sortableKeyboardCoordinates,
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import Doubleclick from "./Doubleclick";
 
 export interface TaskItem {
   key: number;
@@ -30,12 +38,10 @@ const SortableRow: React.FC<{
   item: TaskItem;
   onToggle: (key: number) => void;
   onDelete: (key: number) => void;
-}> = ({ item, onToggle, onDelete }) => {
+  onEdit: (key: number, content: string) => void;
+}> = ({ item, onToggle, onDelete, onEdit }) => {
   const {
-    attributes,
-    listeners,
     setNodeRef,
-    setActivatorNodeRef,
     transform,
     transition,
     isDragging,
@@ -52,7 +58,7 @@ const SortableRow: React.FC<{
     <div
       ref={setNodeRef}
       style={style}
-      className="group flex items-center gap-3 w-full bg-white hover:bg-[#f4f4f5] px-4 py-3 rounded-xl border border-transparent shadow-[0_1px_2px_rgba(0,0,0,0.03)]"
+      className="group flex items-center gap-2.5 w-full bg-white hover:bg-[#f4f4f5] px-3.5 py-2.5 rounded-xl border border-transparent shadow-[0_1px_2px_rgba(0,0,0,0.03)]"
     >
       <Checkbox
         checked={item.completed}
@@ -60,19 +66,11 @@ const SortableRow: React.FC<{
         className="task-checkbox shrink-0"
       />
 
-      <span
-        {...attributes}
-        {...listeners}
-        ref={setActivatorNodeRef}
-        style={{ touchAction: "none" }}
-        className={`flex-1 min-w-0 cursor-grab active:cursor-grabbing text-sm truncate transition-colors ${
-          item.completed
-            ? "line-through text-zinc-300"
-            : "text-[#0a0a0a]"
-        }`}
-      >
-        {item.content}
-      </span>
+      <Doubleclick
+        content={item.content}
+        completed={item.completed}
+        onSave={(newContent) => onEdit(item.key, newContent)}
+      />
 
       <button
         type="button"
@@ -96,6 +94,17 @@ const List: React.FC<ListProps> = ({
     if (activeFilter === "Completed") return task.completed;
     return true;
   });
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
 
   const onDragEnd = ({ active, over }: DragEndEvent) => {
     if (!over || active.id === over.id) return;
@@ -124,8 +133,16 @@ const List: React.FC<ListProps> = ({
     setTasks((prev) => prev.filter((task) => task.key !== key));
   };
 
+  const handleEdit = (key: number, content: string) => {
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.key === key ? { ...task, content } : task,
+      ),
+    );
+  };
+
   return (
-    <div className="w-full h-[420px] max-h-[calc(100svh-450px)] min-h-[180px] overflow-y-auto overflow-x-hidden pr-0.5 scrollbar-hide">
+    <div className="w-full h-105 max-h-[calc(100svh-450px)] min-h-45 overflow-y-auto overflow-x-hidden pr-0.5 scrollbar-hide">
       {visibleTasks.length === 0 ? (
         <div className="flex h-full items-center justify-center">
           <p className="w-full text-center text-xs font-mono text-zinc-400">
@@ -140,6 +157,7 @@ const List: React.FC<ListProps> = ({
         </div>
       ) : (
         <DndContext
+          sensors={sensors}
           modifiers={[restrictToVerticalAxis]}
           onDragEnd={onDragEnd}
         >
@@ -154,6 +172,7 @@ const List: React.FC<ListProps> = ({
                   item={item}
                   onToggle={handleToggle}
                   onDelete={handleDelete}
+                  onEdit={handleEdit}
                 />
               ))}
             </div>

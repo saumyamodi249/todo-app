@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from "react";
 import { RxCheck, RxCross2, RxPencil1 } from "react-icons/rx";
 
@@ -12,13 +13,16 @@ const Doubleclick: React.FC<DoubleclickProps> = ({
   completed,
   onSave,
 }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [value, setValue] = useState(content);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [value, setValue] = useState<string>(content);
+
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
+  const [prevContent, setPrevContent] = useState<string>(content);
+  if (content !== prevContent) {
+    setPrevContent(content);
     setValue(content);
-  }, [content]);
+  }
 
   useEffect(() => {
     if (isEditing) {
@@ -29,11 +33,13 @@ const Doubleclick: React.FC<DoubleclickProps> = ({
 
   const handleSave = () => {
     const trimmed = value.trim();
+
     if (trimmed && trimmed !== content) {
       onSave(trimmed);
     } else {
       setValue(content);
     }
+
     setIsEditing(false);
   };
 
@@ -42,7 +48,9 @@ const Doubleclick: React.FC<DoubleclickProps> = ({
     setIsEditing(false);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
     if (e.key === "Enter") {
       handleSave();
     } else if (e.key === "Escape") {
@@ -61,6 +69,7 @@ const Doubleclick: React.FC<DoubleclickProps> = ({
           onKeyDown={handleKeyDown}
           className="flex-1 min-w-0 bg-white border border-zinc-300 rounded px-2.5 py-1 text-sm text-[#0a0a0a] outline-none focus:border-black focus:ring-1 focus:ring-black shadow-xs transition-all"
         />
+
         <button
           type="button"
           onClick={handleSave}
@@ -69,6 +78,7 @@ const Doubleclick: React.FC<DoubleclickProps> = ({
         >
           <RxCheck className="text-base font-bold" />
         </button>
+
         <button
           type="button"
           onClick={handleCancel}
@@ -81,24 +91,32 @@ const Doubleclick: React.FC<DoubleclickProps> = ({
     );
   }
 
+  const handleStartEdit = () => {
+    setValue(content);
+    setIsEditing(true);
+  };
+
   return (
     <div
-      onDoubleClick={() => setIsEditing(true)}
+      onDoubleClick={handleStartEdit}
       title="Double-click to edit"
       className="flex-1 min-w-0 flex items-center justify-between gap-2 group/text cursor-pointer select-none"
     >
       <span
         className={`truncate text-sm transition-colors ${
-          completed ? "line-through text-zinc-300" : "text-[#0a0a0a]"
+          completed
+            ? "line-through text-zinc-300"
+            : "text-[#0a0a0a]"
         }`}
       >
         {content}
       </span>
+
       <button
         type="button"
         onClick={(e) => {
           e.stopPropagation();
-          setIsEditing(true);
+          handleStartEdit();
         }}
         title="Edit task"
         className="opacity-0 group-hover/text:opacity-100 hover:text-black text-zinc-400 p-1 rounded transition-opacity"

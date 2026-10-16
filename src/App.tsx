@@ -13,8 +13,8 @@ function App() {
         },
         components: {
           Checkbox: {
-            borderRadiusSM: 999, // Circle shape ke liye
-            colorPrimary: "#0a0a0a ", // Checked hone par black background
+            borderRadiusSM: 999,
+            colorPrimary: "#0a0a0a",
             colorPrimaryHover: "#27272a",
           },
         },

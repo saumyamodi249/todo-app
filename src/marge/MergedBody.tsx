@@ -1,10 +1,8 @@
-
 import React, { useEffect, useState } from "react";
 import Question from "../components/body/Question";
 import List from "../components/body/List";
 import type { TaskItem, FilterType } from "../components/body/List";
 import MergedFooter from "./MergedFooter";
-
 
 interface MergedBodyProps {
   onTaskCountChange: (count: number) => void;
